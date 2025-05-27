@@ -1,0 +1,114 @@
+# AISmartMixer Configuration File
+
+# --------------------------
+# PATHS CONFIGURATION
+# --------------------------
+# 定义所有输入和输出文件/文件夹的路径
+paths:
+  # 输入目录
+  input_audio_dir: "data/input_audio/"
+  input_audio_filename: "audio_2_男.mp3" # 您主要的旁白/音频文件
+  input_video_dir: "data/input_video_clips/" 
+
+  # 输出目录
+  output_processed_data_dir: "output/processed_data/" # 存放中间处理文件，如转录稿、嵌入向量
+  output_edl_dir: "output/edl/"                     # 存放生成的编辑决策列表 (EDL)
+  output_final_video_dir: "output/final_video/"       # 存放最终渲染的视频
+
+  # 输出文件名 (可以自定义)
+  audio_transcription_json: "audio_transcription.json"
+  video_metadata_embeddings_json: "video_metadata_embeddings.json"
+  edit_decision_list_json: "final_edit_list.json"
+  final_video_filename: "ai_smart_mixed_video.mp4"
+
+# --------------------------
+# MODEL CONFIGURATION
+# --------------------------
+# 指定用于各项任务的AI模型
+models:
+  # Whisper 模型用于音频转录
+  # 可选项: "tiny", "base", "small", "medium", "large-v3", 等.
+  # ".en" 模型仅支持英语，通常更快更小。 "large" 模型更准确但需要更多资源。
+  whisper_model_name: "base" # 建议从 "base" 或 "small" 开始测试
+
+  # Sentence Transformer 模型用于生成文本嵌入向量
+  # 可在 https://www.sbert.net/docs/pretrained_models.html 查找可用模型
+  # "all-MiniLM-L6-v2" 是一个不错的通用轻量级模型
+  # 对于多语言场景，可以考虑 "paraphrase-multilingual-MiniLM-L12-v2"
+  embedding_model_name: "all-MiniLM-L6-v2"
+
+# --------------------------
+# ANALYSIS SETTINGS (新增的配置块)
+# --------------------------
+# 控制分析阶段行为的参数
+analysis:
+  # 是否递归搜索 input_video_dir 下的子文件夹以查找视频文件。
+  # 如果您将视频片段按源视频分在不同的子文件夹中，请设置为 true。
+  recursive_video_search: true
+
+  # （可选）如果您希望视频分析也提取帧，可以在这里添加相关配置
+  # extract_frames_interval: 5 # 每隔多少秒提取一帧作为代表
+
+# --------------------------
+# PROCESSING & MATCHING SETTINGS
+# --------------------------
+# 控制处理和匹配阶段行为的参数
+settings:
+  # 支持的视频文件扩展名 (VideoAnalyzer 使用)
+  video_extensions:
+    - "*.mp4"
+    - "*.mov"
+    - "*.avi"
+    - "*.mkv"
+    - "*.webm"
+    - "*.flv"
+
+  # TimelineGenerator 和 Matcher 使用的参数
+  # 视频片段在最终时间线中被包含的最小持续时间 (秒)
+  min_clip_duration_for_timeline: 1.0
+
+  # 用于判断视频片段与音频片段相关的余弦相似度阈值
+  # 范围 -1 到 1。值越高表示匹配越严格。根据结果调整。
+  similarity_threshold: 0.25 # 根据您的内容调整
+
+  # 为每个音频片段考虑的最相似视频片段的候选数量
+  top_k_candidates: 5
+
+  # 处理视频片段使用策略:
+  # "reuse_different_segments": 允许复用同一个视频文件，但尝试挑选不同片段 (如果视频片段本身有内部结构)
+  # "no_reuse": 尝试每个视频文件只使用一次 (较难保证完全覆盖)
+  # "allow_full_reuse": 必要时允许完全复用整个片段
+  video_reuse_strategy: "reuse_different_segments"
+
+  # 如果没有为音频片段找到合适的视频，使用的回退策略:
+  # "blank": 插入黑色画面片段 (合成器需要实现)
+  # "previous": 复用上一个使用过的视频片段 (需要实现)
+  # "use_generic_broll_path": 使用一个通用B-roll素材文件夹中的片段
+  fallback_strategy: "blank"
+  # generic_broll_path: "data/generic_broll/" # 如果使用 "use_generic_broll_path" 策略，取消注释并设置路径
+
+  # Synthesizer (视频合成器) 使用的参数
+  # 输出视频分辨率 (例如, "1280x720", "1920x1080")
+  # 设置为 "auto" 时，会尝试使用EDL中第一个视频片段的分辨率
+  output_video_resolution: "auto"
+  output_video_fps: 25 # 输出视频的帧率
+
+  # (新增) 合成器使用的编解码器等参数
+  video_codec: "libx264"
+  audio_codec: "aac"
+  video_preset: "medium" # FFMPEG 预设 (ultrafast, superfast, ..., medium, ..., slow, slower)
+  ffmpeg_threads: 4
+  temp_audiofile_name: "temp_synthesizer_audio.aac"
+
+# --------------------------
+# LOGGING CONFIGURATION
+# --------------------------
+logging:
+  level: "INFO" # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_file: "output/app.log" # 设置为 null 或移除则仅进行控制台日志输出
+
+# --------------------------
+# MISCELLANEOUS
+# --------------------------
+# 设置为 true 则强制重新分析音频和视频，即使中间文件已存在
+force_reanalyze: true
