@@ -98,7 +98,7 @@ AISmartMixer 能够根据用户提供的旁白音频，智能地从视频素材�
     *   以及各输出文件的具体名称。
 *   **`models`**:
     *   `whisper_model_name`: Whisper 模型名称 (如 `tiny`, `base`, `small`, `medium`, `large-v3`)。
-    *   `embedding_model_name`: SentenceTransformer 模型名称 (如 `all-MiniLM-L6-v2`)。
+    *   `embedding_model_name`: SentenceTransformer 模型名称 (如 `all-MiniLM-L6-v2`)，可以根据实际情况更换模型。
 *   **`analysis`**:
     *   `recursive_video_search`: 是否递归搜索 `input_video_dir` 下的子文件夹。
 *   **`settings`**:
