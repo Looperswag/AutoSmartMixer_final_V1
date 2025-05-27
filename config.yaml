@@ -7,7 +7,7 @@
 paths:
   # 输入目录
   input_audio_dir: "data/input_audio/"
-  input_audio_filename: "audio_2_男.mp3" # 您主要的旁白/音频文件
+  input_audio_filename: "your_audio.mp3" # 您需要上传 - 主要的旁白/音频文件
   input_video_dir: "data/input_video_clips/" 
 
   # 输出目录
